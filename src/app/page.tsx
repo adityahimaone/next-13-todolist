@@ -1,50 +1,33 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import TodoItem from "@/components/TodoItem";
-import { prisma } from "@/db";
-import { Todo } from "@prisma/client";
-import { get } from "http";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { useRouter } from "next/router";
+import { getTodos, toogleTodo, deleteTodo } from "@/api/todos";
+import { Todo } from "@prisma/client";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
-/**
- * Retrieves all todos from the database.
- * @returns {Promise<Todo[]>} A promise that resolves to an array of Todo objects.
- */
-function getTodos(): Promise<Todo[]> {
-  return prisma.todo.findMany();
-}
+export default function Page() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [parent] = useAutoAnimate();
 
-/**
- * Toggles the completion status of a todo item in the database.
- * @param id - The ID of the todo item to toggle.
- * @param complete - The new completion status of the todo item.
- */
-async function toogleTodo(id: string, complete: boolean) {
-  "use server";
+  // Separate async function to fetch todos
+  async function fetchTodos() {
+    const todosData = await getTodos();
+    setTodos(todosData);
+  }
 
-  await prisma.todo.update({ where: { id }, data: { complete } });
-}
+  useEffect(() => {
+    fetchTodos();
+  }, []);
 
-/**
- * Deletes a todo item from the database and redirects to the home page.
- * @param id - The id of the todo item to be deleted.
- * @returns Promise<void>
- */
-async function deleteTodo(id: string): Promise<void> {
-  "use server";
+  const handleDeleteTodo = async (id: string) => {
+    await deleteTodo(id);
+    await fetchTodos(); // Fetch and update todos after deleting
+  };
 
-  await prisma.todo.delete({ where: { id } });
-  getTodos();
-}
+  console.log(todos, "todos2");
 
-export default async function Home() {
-  /**
-   * Retrieves todos from the server.
-   * @returns {Promise<Todo[]>} A promise that resolves with an array of Todo objects.
-   */
-  const todos = await getTodos();
-  // adding data to the database
-  // await prisma.todo.create({ data: { title: "testing", complete: false } });
   return (
     <>
       <header className="flex justify-between mb-4 items-center">
@@ -54,13 +37,13 @@ export default async function Home() {
         </Link>
       </header>
       <main>
-        <ul className="space-y-2">
+        <ul ref={parent} className="space-y-2">
           {todos.map((todo) => (
             <TodoItem
               key={todo.id}
               {...todo}
               toggleTodo={toogleTodo}
-              deleteTodo={deleteTodo}
+              deleteTodo={handleDeleteTodo}
             />
           ))}
         </ul>

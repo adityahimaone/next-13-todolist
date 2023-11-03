@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 
 type Props = {
   id: string;
@@ -12,7 +12,7 @@ type Props = {
 
 const TodoItem = ({ id, title, complete, toggleTodo, deleteTodo }: Props) => {
   return (
-    <li className="flex gap-2 items-center">
+    <li className="flex gap-2 items-center p-4 bg-slate-900 hover:bg-slate-950 rounded-md max-w-sm">
       <input
         type="checkbox"
         name=""
@@ -23,7 +23,7 @@ const TodoItem = ({ id, title, complete, toggleTodo, deleteTodo }: Props) => {
       />
       <label
         htmlFor={id}
-        className="peer-checked:line-through peer-checked:text-slate-500 cursor-pointer space-x-3"
+        className="peer-checked:line-through peer-checked:text-slate-500 cursor-pointer space-x-3 w-full flex justify-between"
       >
         <span>{title}</span>
         <button
